@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>百家樂 AI 預測器</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+        button { font-size: 20px; margin: 10px; padding: 10px 20px; }
+        #history { margin-top: 20px; font-size: 18px; }
+        #result { margin-top: 30px; font-size: 22px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🎲 百家樂 AI 預測器</h1>
+    <button onclick="add('B')">🟥 莊</button>
+    <button onclick="add('P')">🟦 閒</button>
+    <button onclick="clearHistory()">🔄 清除</button>
+
+    <div id="history">目前紀錄：尚未輸入</div>
+    <button onclick="predict()">🔍 預測下一局</button>
+    <div id="result"></div>
+
+    <script>
+        function add(result) {
+            fetch('/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({result})
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('history').innerText = '目前紀錄：' + data.history.join(' → ');
+                document.getElementById('result').innerText = '';
+            });
+        }
+
+        function clearHistory() {
+            fetch('/clear', {method: 'POST'})
+            .then(res => res.json())
+            .then(() => {
+                document.getElementById('history').innerText = '目前紀錄：尚未輸入';
+                document.getElementById('result').innerText = '';
+            });
+        }
+
+        function predict() {
+            fetch('/predict', {method: 'POST'})
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('result').innerText = data.error;
+                } else {
+                    document.getElementById('result').innerText = `✅ 預測：${data.prediction}（莊 ${data.prob_b}, 閒 ${data.prob_p}）`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
